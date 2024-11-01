@@ -1,0 +1,149 @@
+﻿@page "/ocorrencia/kanban"
+
+@using Radzen
+@inject IJSRuntime JS
+
+<h3 class="text-center my-4 text-light">Ocorrencia KANBAN</h3>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Coluna 'Em Aberto' -->
+        <div class="col kanban-column" style="background-color: #7fa9c1;">
+            <h4 class="column-title m-2">Em Aberto</h4>
+            <div class="card-columns">
+                @foreach (var task in tasks.Where(t => t.Status == "Fazer"))
+                {
+                    <RadzenCard class="kanban-card m-2" data-id="@task.Title">
+                        <span class="area-badge">@task.Area</span>
+                        <CardBody>
+                            @task.Description
+                        </CardBody>
+                    </RadzenCard>
+                }
+            </div>
+        </div>
+
+        <!-- Coluna 'Em Andamento' -->
+        <div class="col kanban-column" style="background-color: #517fa4;">
+            <h4 class="column-title m-2">Em Andamento</h4>
+            <div class="card-columns">
+                @foreach (var task in tasks.Where(t => t.Status == "Em Andamento"))
+                {
+                    <RadzenCard class="kanban-card m-2" data-id="@task.Title">
+                        <span class="area-badge">@task.Area</span>
+                        <CardBody>
+                            @task.Description
+                        </CardBody>
+                    </RadzenCard>
+                }
+            </div>
+        </div>
+
+        <!-- Coluna 'Entregue' -->
+        <div class="col kanban-column" style="background-color: #0a4a6b;">
+            <h4 class="column-title m-2">Entregue</h4>
+            <div class="card-columns">
+                @foreach (var task in tasks.Where(t => t.Status == "Concluído"))
+                {
+                    <RadzenCard class="kanban-card m-2" data-id="@task.Title">
+                        <span class="area-badge">@task.Area</span>
+                        <CardBody>
+                            @task.Description
+                        </CardBody>
+                    </RadzenCard>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #38474E;
+        color: #fff;
+    }
+
+    .kanban-column {
+        min-height: 100vh;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 10px;
+        position: relative;
+        color: #38474E;
+    }
+
+    .kanban-card {
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        position: relative;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .area-badge {
+        background-color: #007bff;
+        color: white;
+        padding: 0.2em 0.5em;
+        border-radius: 0.25em;
+        font-size: 0.75em;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+
+    .container-fluid {
+        max-width: 100%;
+        padding: 0 15px;
+        overflow-x: auto;
+    }
+
+    .row {
+        display: flex;
+        flex-wrap: nowrap;
+    }
+
+    .col {
+        width: 32%;
+        flex: 0 0 100%;
+        max-width: 100%;
+        padding: 0 10px;
+    }
+
+    @@media (min-width: 768px) {
+        .col {
+            flex: 0 0 32%;
+            max-width: 32%;
+        }
+    }
+
+    .column-title {
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+</style>
+
+@code {
+    private List<TaskItem> tasks = new List<TaskItem>
+    {
+        new TaskItem { Title = "Task 1", Description = "Descrição da Task 1", Area = "Informática", Status = "Fazer" },
+        new TaskItem { Title = "Task 2", Description = "Descrição da Task 2", Area = "Elétrica", Status = "Fazer" },
+        new TaskItem { Title = "Task 5", Description = "Descrição da Task 5", Area = "Geral", Status = "Em Andamento" },
+        new TaskItem { Title = "Task 6", Description = "Descrição da Task 6", Area = "Informática", Status = "Em Andamento" },
+        new TaskItem { Title = "Task 7", Description = "Descrição da Task 7", Area = "Elétrica", Status = "Concluído" },
+        new TaskItem { Title = "Task 8", Description = "Descrição da Task 8", Area = "Geral", Status = "Concluído" },
+    };
+
+    public class TaskItem
+    {
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Area { get; set; }
+        public string Status { get; set; }
+    }
+}

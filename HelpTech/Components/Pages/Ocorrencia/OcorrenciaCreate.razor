@@ -1,0 +1,95 @@
+﻿@page "/ocorrencia/create"
+@using HelpTech.Domain.DTOs.Ocorrencia.Request
+@using HelpTech.Domain.Enumerators
+@using System.Net
+
+<RadzenTemplateForm Data="@ocorrenciaAdicionarRequest" Submit="@((OcorrenciaAdicionarRequest args) => { AdicionarOcorrencia(); })">
+    <RadzenRow AlignItems="AlignItems.End" Wrap="FlexWrap.Wrap" Gap="1rem" Style="margin-top: 2rem; margin-bottom: 2rem;">
+        <RadzenColumn>
+
+            <h1>Conte para nós</h1>
+            <h4>Preencha as informações referentes ao ocorrido!</h4>
+
+            <RadzenCard Style="margin-top: 2rem;">
+                <RadzenText class="ml-1">Área de Ocorrência</RadzenText>
+                <RadzenDropDown Style="width: 100%;" Data="@(Enum.GetValues(typeof(EnumTipoOcorrencia)).Cast<Enum>().OrderBy(p => p.GetDisplayDescription()))" @bind-Value="ocorrenciaAdicionarRequest.TipoOcorrencia" />
+
+                <RadzenRow class="mt-2">
+
+                    <RadzenColumn>
+                        <RadzenLabel class="ml-1" Text="Data do Ocorrido" Component="DatePickerDateOnlyType" Style="margin-right: 8px; vertical-align: middle;" />
+                        <RadzenDatePicker AllowInput="false" AllowClear="true" @bind-Value="@ocorrenciaAdicionarRequest.Data" DateFormat="dd/MM/yyyy" Name="Data" class="w-100"/>
+                        <RadzenRequiredValidator Component="Data" Text="A data do ocorrido é obrigatória." />
+                    </RadzenColumn>
+
+                    <RadzenColumn>
+                        <RadzenLabel class="ml-1" Text="Hora do Ocorrido" Component="DatePickerTimeOnlyType" Style="margin-right: 8px; vertical-align: middle;" />
+                        <RadzenDatePicker AllowInput="false" AllowClear="true" @bind-Value="@ocorrenciaAdicionarRequest.Hora" DateFormat="HH:mm" Name="Hora" class="w-100" />
+                        <RadzenRequiredValidator Component="Hora" Text="A hora do ocorrido é obrigatória (aproximada)." />
+                    </RadzenColumn>
+
+                </RadzenRow>
+
+                <RadzenText class="mt-2 ml-1">Descrição da Ocorrência</RadzenText>
+                <RadzenTextArea @bind-Value="ocorrenciaAdicionarRequest.Descricao" Rows="10" Placeholder=" Descreva aqui..." class="w-100" Name="Descricao" />
+                <RadzenRequiredValidator Component="Descricao" Text="A descrição do ocorrido é obrigatória." />
+
+
+                <RadzenStack Orientation="Orientation.Horizontal" Style="width: 100%;" Class="mt-3">
+                    <RadzenButton ButtonType="ButtonType.Submit" Variant="Variant.Flat" ButtonStyle="ButtonStyle.Light" Style="width: 100%;" Disabled="@isLoading">
+                        @if (isLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            <span class="visually-hidden">Loading...</span>
+                        }
+                        else
+                        {
+                            <span>Enviar</span>
+                        }
+                    </RadzenButton>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenTemplateForm>
+
+@code {
+    private bool isLoading = false;
+
+    OcorrenciaAdicionarRequest ocorrenciaAdicionarRequest = new OcorrenciaAdicionarRequest();
+
+    public async void AdicionarOcorrencia()
+    {
+        isLoading = true;
+        var response = await HttpClient.PostAsJsonAsync("ocorrencia/adicionar", ocorrenciaAdicionarRequest);
+
+        if (response.StatusCode == HttpStatusCode.Created)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+
+            NotificationService.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Success,
+                    Summary = "Sucesso",
+                    Detail = "Ocorrência registrada com sucesso",
+                    Duration = 4000
+                });
+
+            isLoading = false;
+
+            NavigationManager.NavigateTo("ocorrencia/list");
+        }
+        else
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Erro",
+                Detail = "Ocorreu um Problema ao Registrar uma Ocorrência",
+                Duration = 4000
+            });
+
+            isLoading = false;
+        }
+    }
+}

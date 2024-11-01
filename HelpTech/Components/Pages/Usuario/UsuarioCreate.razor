@@ -1,0 +1,153 @@
+﻿@page "/usuario/create"
+
+@using HelpTech.Components.Layout
+@using HelpTech.Domain.DTOs.Usuario.Request;
+
+<RadzenRow Gap="0" Class="rz-my-12 rz-mx-auto rz-border-radius-6 rz-shadow-10 rz-my-12" Style="width: 100%; max-width: 800px; overflow: hidden;">
+    <RadzenColumn Size="12" SizeMD="6">
+        <RadzenCard Class="rz-shadow-0 rz-border-radius-0 rz-text-align-center rz-p-12" Style="height: 100%; background-image: linear-gradient(45deg, #768198, #bec6d8)">
+            <RadzenText TextStyle="TextStyle.DisplayH3" TagName="TagName.H2" Class="rz-color-white rz-mb-6">Bem Vindo(a)!</RadzenText>
+            <RadzenText TextStyle="TextStyle.H6" Class="rz-color-white">Cadastre-se para prosseguir.</RadzenText>
+        </RadzenCard>
+    </RadzenColumn>
+    <RadzenColumn Size="12" SizeMD="6">
+        <RadzenCard Class="rz-shadow-0 rz-border-radius-0 rz-p-12">
+            <RadzenTemplateForm Data="@usuarioAdicionarRequest" Submit="@((UsuarioAdicionarRequest args) => { AdicionarUsuario(); })">
+                <RadzenRow AlignItems="AlignItems.End" Wrap="FlexWrap.Wrap" Gap="1rem">
+                    @* <RadzenTemplateForm Data="@usuarioAdicionarRequest" Submit="@((UsuarioAdicionarRequest args) => { AdicionarUsuario(); })">
+                    <RadzenRow AlignItems="AlignItems.End" Wrap="FlexWrap.Wrap" Gap="1rem" Class="rz-p-sm-12"> *@
+                    <RadzenColumn>
+                        <h1>Cadastro</h1>
+                        <p>Já tem uma conta? <RadzenLink Path="/" Text="Logue aqui" Style="color: red; font-weight: bold;" /></p>
+
+                        <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+                            <RadzenFormField Text="Nome" Style="width: 100%;">
+                                <RadzenTextBox Style="width: 100%;" @bind-Value="usuarioAdicionarRequest.Nome" Name="Nome" />
+                            </RadzenFormField>
+                            <RadzenRequiredValidator Component="Nome" Text="Nome é obrigatório" />
+                        </RadzenColumn>
+
+                        <RadzenColumn>
+                            <RadzenFormField Text="E-mail institucional" Style="width: 100%;">
+                                <RadzenTextBox Style="width: 100%;" @bind-Value="usuarioAdicionarRequest.EmailLogin" Name="EmailLogin" />
+                            </RadzenFormField>
+                            <RadzenRequiredValidator Component="EmailLogin" Text="Email é Obrigatório" />
+                            <RadzenRegexValidator Component="EmailLogin" Pattern="@etecPattern" Text="Email deve ser institucional da ETEC ou da CPS" />
+                        </RadzenColumn>
+
+
+                        <RadzenColumn>
+                            <RadzenFormField Text="Confirmação Email" Style="width: 100%;">
+                                <RadzenTextBox Style="width: 100%;" @bind-Value="usuarioAdicionarRequest.EmailLoginConfirmacao" Name="EmailLoginConfirmacao" />
+                            </RadzenFormField>
+                            <RadzenRequiredValidator Component="EmailLoginConfirmacao" Text="Confirmação do email é obrigatória" />
+                        </RadzenColumn>
+
+                        <RadzenRow>
+                            <RadzenColumn>
+                                <RadzenFormField Text="Senha" Style="width: 100%;">
+                                    <RadzenPassword Style="width: 100%;" @bind-Value="usuarioAdicionarRequest.Senha" Name="Senha" />
+                                </RadzenFormField>
+                                <RadzenRequiredValidator Component="Senha" Text="Senha é obrigatória" />
+                                @if (!string.IsNullOrEmpty(usuarioAdicionarRequest.Senha))
+                                {
+                                    <RadzenLengthValidator Component="Senha" Min="6" Text="O campo precisa ter no mínimo 6 caracteres." />
+                                }
+                            </RadzenColumn>
+
+                            <RadzenColumn>
+                                <RadzenFormField Text="Repita sua senha" Style="width: 100%;">
+                                    <RadzenPassword Style="width: 100%;" @bind-Value="usuarioAdicionarRequest.SenhaConfirmacao" Name="SenhaConfirmacao" />
+                                </RadzenFormField>
+                                <RadzenRequiredValidator Component="SenhaConfirmacao" Text="Confirmação da senha é obrigatória" />
+                                @if (!string.IsNullOrEmpty(usuarioAdicionarRequest.SenhaConfirmacao))
+                                {
+                                    <RadzenLengthValidator Component="SenhaConfirmacao" Min="6" Text="O campo precisa ter no mínimo 6 caracteres." />
+                                }
+                            </RadzenColumn>
+                        </RadzenRow>
+
+                        <RadzenFormField Variant="Variant.Text" Style="width: 100%;">
+                            <RadzenButton ButtonType="ButtonType.Submit" Shade="Shade.Lighter" ButtonStyle="ButtonStyle.Light" Disabled="@isLoading">
+                                @if (isLoading)
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Loading...</span>
+                                }
+                                else
+                                {
+                                    <span>Cadastrar</span>
+                                }
+                            </RadzenButton>
+                        </RadzenFormField>
+
+
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenTemplateForm>
+        </RadzenCard>
+    </RadzenColumn>
+</RadzenRow>
+
+<RadzenNotification />
+
+@inherits ComponentBase
+
+@code {
+    public bool isLoading = false;
+    public string etecPattern = @"^(?:[a-zA-Z]+\.[a-zA-Z]+[0-9]*@etec\.sp\.gov\.br|[a-zA-Z]+\.[a-zA-Z]+[0-9]*@cps\.sp\.gov\.br)$";
+
+    UsuarioAdicionarRequest usuarioAdicionarRequest = new UsuarioAdicionarRequest();
+
+
+    public async void AdicionarUsuario()
+    {
+        if (string.IsNullOrEmpty(usuarioAdicionarRequest.Nome) || string.IsNullOrEmpty(usuarioAdicionarRequest.EmailLogin) || string.IsNullOrEmpty(usuarioAdicionarRequest.EmailLoginConfirmacao) || string.IsNullOrEmpty(usuarioAdicionarRequest.Senha) || string.IsNullOrEmpty(usuarioAdicionarRequest.SenhaConfirmacao))
+        {
+            NotificationService.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "Erro",
+                    Detail = "Por favor, preencha todos os campos.",
+                    Duration = 4000
+                });
+            return;
+        }
+
+        isLoading = true;
+        StateHasChanged();
+
+        var response = await HttpClient.PostAsJsonAsync("usuario/adicionar", usuarioAdicionarRequest);
+        if (response.StatusCode == HttpStatusCode.Created)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+
+            NotificationService.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Success,
+                    Summary = "Sucesso",
+                    Detail = "Seu usuário foi criado com sucesso",
+                    Duration = 4000
+                });
+
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            NotificationService.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "Usuário existente",
+                    Detail = errorContent,
+                    Duration = 4000
+                });
+        }
+
+        isLoading = false;
+        StateHasChanged();
+
+    }
+
+
+}

@@ -1,0 +1,50 @@
+﻿@page "/usuario/recuperar-senha"
+@using HelpTech.Domain.DTOs.Usuario.Request
+
+<h3>Recuperar Senha</h3>
+
+<RadzenTemplateForm TItem="MandarCodigoRequest" Data="@mandarCodigoRequest">
+    <RadzenRow AlignItems="AlignItems.End" Wrap="FlexWrap.Wrap" Gap="1rem" Style="margin-top: 2rem; margin-bottom: 2rem;">
+        <RadzenColumn>
+            <h1>Perdeu sua senha?</h1>
+            <h4>Informe seu email para te enviarmos um código de verificação</h4>
+            <RadzenCard>
+                <RadzenText class="mt-2 ml-1">Confirmação do Email</RadzenText>
+                <RadzenTextBox Style="width: 100%;" @bind-Value="mandarCodigoRequest.Email" />
+
+                <RadzenFormField Style="width: 100%;">
+                    <RadzenButton ButtonType="ButtonType.Submit" Shade="Shade.Lighter" Text="Pedir um código" ButtonStyle="ButtonStyle.Light" Click="EnviarCodigo" />
+                </RadzenFormField>
+            </RadzenCard>
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenTemplateForm>
+
+@code {
+    private MandarCodigoRequest mandarCodigoRequest = new MandarCodigoRequest();
+
+    private async Task EnviarCodigo()
+    {
+        try
+        {
+            var response = await HttpClient.PostAsJsonAsync("/usuario/enviar-codigo", mandarCodigoRequest);
+            var responseMessage = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Código enviado com sucesso
+                NotificationService.Notify(NotificationSeverity.Success, "Código Enviado", "O código de verificação foi enviado para seu email.");
+            }
+            else
+            {
+                // Lidar com erro
+                NotificationService.Notify(NotificationSeverity.Error, "Erro", responseMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Lidar com exceção
+            NotificationService.Notify(NotificationSeverity.Error, "Erro", ex.Message);
+        }
+    }
+}
